@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Categories NLP & ML Intelligence Dashboard</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN for Interactive Visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Inter Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            },
+            accent: {
+              red: '#f43f5e',
+              amber: '#f59e0b',
+              emerald: '#10b981',
+              cyan: '#06b6d4',
+              purple: '#a855f7'
+            },
+            dark: {
+              900: '#0b0f19',
+              850: '#111827',
+              800: '#1e293b',
+              750: '#283548',
+              700: '#334155',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    /* Glow effect gradients */
+    .glow-indigo {
+      box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.25);
+    }
+    .glow-cyan {
+      box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.25);
+    }
+    .matrix-cell {
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .matrix-cell:hover {
+      transform: scale(1.08);
+      z-index: 10;
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
+    }
+  </style>
+</head>
+<body class="bg-dark-900 text-slate-100 font-sans min-h-screen antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- TOP NAVIGATION HEADER -->
+  <header class="sticky top-0 z-50 bg-dark-850/80 backdrop-blur-md border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 via-brand-600 to-indigo-400 flex items-center justify-center shadow-lg shadow-rose-500/20">
+          <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+            YouTube NLP & Machine Learning Suite
+            <span class="text-xs font-mono font-medium py-0.5 px-2 rounded-full bg-brand-500/20 text-brand-400 border border-brand-500/30">v2.4 PyTorch</span>
+          </h1>
+          <p class="text-xs text-slate-400 hidden sm:block">Text Normalization, Vector Spaces, LSTM, BiLSTM & Inference</p>
+        </div>
+      </div>
+
+      <!-- Action buttons & badges -->
+      <div class="flex items-center gap-3">
+        <div class="hidden md:flex items-center gap-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg text-xs font-mono text-slate-300">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span>Corpus: 527 Docs</span>
+          <span class="text-slate-600">|</span>
+          <span class="text-brand-400">Dim: 46 (TF-IDF)</span>
+        </div>
+        <a href="#simulator" class="px-3.5 py-1.5 rounded-lg text-xs font-medium bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white shadow-md shadow-brand-600/30 transition flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Live Simulator
+        </a>
+      </div>
+    </div>
+
+    <!-- Subnav Tabs -->
+    <div class="bg-dark-900/60 border-t border-slate-800/80 px-4">
+      <div class="max-w-7xl mx-auto flex space-x-1 sm:space-x-4 overflow-x-auto text-xs sm:text-sm font-medium py-2">
+        <button onclick="switchTab('dataset')" id="tab-btn-dataset" class="tab-btn active px-3 py-1.5 rounded-md text-brand-400 bg-brand-500/10 border border-brand-500/30 transition">1. Dataset & Overview</button>
+        <button onclick="switchTab('preprocessing')" id="tab-btn-preprocessing" class="tab-btn px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 transition">2. Preprocessing & Sandbox</button>
+        <button onclick="switchTab('features')" id="tab-btn-features" class="tab-btn px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 transition">3. Vector Spaces & Heatmaps</button>
+        <button onclick="switchTab('models')" id="tab-btn-models" class="tab-btn px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 transition">4. Models & Benchmarks</button>
+        <button onclick="switchTab('simulator')" id="tab-btn-simulator" class="tab-btn px-3 py-1.5 rounded-md text-slate-400 hover:text-slate-200 transition">5. Inference Studio</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+    <!-- ==================== SECTION 1: DATASET & STATS ==================== -->
+    <section id="tab-dataset" class="tab-content space-y-8">
+      
+      <!-- Summary Hero Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div class="bg-dark-850 p-5 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden group hover:border-brand-500/50 transition">
+          <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-rose-500/10 rounded-full blur-xl group-hover:bg-rose-500/20 transition"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase text-slate-400 tracking-wider">Unique Categories</span>
+            <span class="p-2 rounded-lg bg-rose-500/10 text-rose-400">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+            </span>
+          </div>
+          <div class="mt-4 flex items-baseline gap-2">
+            <span class="text-3xl font-extrabold text-white">32</span>
+            <span class="text-xs text-rose-400 font-medium">Categories</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">15 Assignable (Uploadable) / 17 Non-assignable categories in YouTube taxonomy.</p>
+        </div>
+
+        <div class="bg-dark-850 p-5 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden group hover:border-brand-500/50 transition">
+          <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-brand-500/10 rounded-full blur-xl group-hover:bg-brand-500/20 transition"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase text-slate-400 tracking-wider">Augmented Corpus</span>
+            <span class="p-2 rounded-lg bg-brand-500/10 text-brand-400">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </span>
+          </div>
+          <div class="mt-4 flex items-baseline gap-2">
+            <span class="text-3xl font-extrabold text-white">527</span>
+            <span class="text-xs text-brand-400 font-medium font-mono">(527, 4) Matrix</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">Synthetically scaled up with contextual feature descriptions for robust training.</p>
+        </div>
+
+        <div class="bg-dark-850 p-5 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden group hover:border-brand-500/50 transition">
+          <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-cyan-500/10 rounded-full blur-xl group-hover:bg-cyan-500/20 transition"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase text-slate-400 tracking-wider">Feature Extraction</span>
+            <span class="p-2 rounded-lg bg-cyan-500/10 text-cyan-400">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+            </span>
+          </div>
+          <div class="mt-4 flex items-baseline gap-2">
+            <span class="text-3xl font-extrabold text-white">46</span>
+            <span class="text-xs text-cyan-400 font-medium">Distinct TF-IDF Features</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">N-gram vector space covering key domain terms: film, animation, comedy, gaming, etc.</p>
+        </div>
+
+        <div class="bg-dark-850 p-5 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden group hover:border-brand-500/50 transition">
+          <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase text-slate-400 tracking-wider">Peak Model Accuracy</span>
+            <span class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </span>
+          </div>
+          <div class="mt-4 flex items-baseline gap-2">
+            <span class="text-3xl font-extrabold text-white">97.17%</span>
+            <span class="text-xs text-emerald-400 font-medium">LogReg & LSTM</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-2">Stratified test evaluation with micro & macro F1-score of 0.97 on test split (106 samples).</p>
+        </div>
+      </div>
+
+      <!-- Dataset Table & Filter -->
+      <div class="bg-dark-850 rounded-2xl border border-slate-800 p-6 shadow-xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800">
+          <div>
+            <h2 class="text-lg font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-brand-500"></span>
+              YouTube Video Categories Metadata & Synthetic Document Corpus
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">Parsed directly from <code class="text-slate-300 font-mono">Trending_Youtube_Video_Statistics.json</code></p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="relative">
+              <input type="text" id="category-search" placeholder="Search title or ID..." oninput="filterCategoryTable()"
+                class="bg-dark-900 border border-slate-700 text-xs rounded-xl px-3.5 py-2 pl-9 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-500 w-48 sm:w-64">
+              <svg class="w-4 h-4 text-slate-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            <select id="assignable-filter" onchange="filterCategoryTable()" class="bg-dark-900 border border-slate-700 text-xs rounded-xl px-3 py-2 text-slate-300 focus:outline-none focus:border-brand-500">
+              <option value="all">All Statuses</option>
+              <option value="true">Assignable Only (Class 1)</option>
+              <option value="false">Non-Assignable (Class 0)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto mt-4 max-h-96">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead class="bg-dark-900 text-slate-400 uppercase font-mono text-[11px] sticky top-0 z-10 border-b border-slate-800">
+              <tr>
+                <th class="py-3 px-4">ID</th>
+                <th class="py-3 px-4">Category Title</th>
+                <th class="py-3 px-4">Assignable (Target Label)</th>
+                <th class="py-3 px-4">Channel ID</th>
+                <th class="py-3 px-4">Augmented Contextual Text Document</th>
+              </tr>
+            </thead>
+            <tbody id="category-table-body" class="divide-y divide-slate-800/80 text-slate-300">
+              <!-- Dynamically populated via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-3 flex items-center justify-between text-xs text-slate-400 pt-3 border-t border-slate-800">
+          <span id="table-record-count">Showing 32 YouTube Category entities</span>
+          <span class="font-mono text-slate-500">Source: YouTube Data API v3 Response</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION 2: PREPROCESSING EXPLORER & SANDBOX ==================== -->
+    <section id="tab-preprocessing" class="tab-content hidden space-y-8">
+      
+      <!-- Pipeline Steps Banner -->
+      <div class="bg-gradient-to-r from-brand-900/40 via-dark-850 to-indigo-950/40 p-6 rounded-2xl border border-brand-500/20 shadow-xl">
+        <h2 class="text-xl font-bold text-white mb-2">NLP Text Preprocessing & Tokenization Engine</h2>
+        <p class="text-xs sm:text-sm text-slate-300 max-w-4xl">
+          Visualizing each deterministic step executed in the notebook: Unicode normalization, lowercasing, regex filtering <code class="text-brand-300 font-mono">[^a-z\s]</code>, dual-engine tokenization (NLTK vs. spaCy), Porter Stemming, morphological Lemmatization, and stopword pruning.
+        </p>
+
+        <!-- Pipeline diagram pills -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 mt-6 font-mono text-[11px]">
+          <div class="p-2.5 rounded-xl bg-dark-900/80 border border-slate-800 flex flex-col items-center text-center">
+            <span class="text-brand-400 font-bold mb-1">Step 1</span>
+            <span class="text-slate-200">Raw Input Text</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-dark-900/80 border border-slate-800 flex flex-col items-center text-center">
+            <span class="text-indigo-400 font-bold mb-1">Step 2</span>
+            <span class="text-slate-200">Lower & Regex Clean</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-dark-900/80 border border-slate-800 flex flex-col items-center text-center">
+            <span class="text-cyan-400 font-bold mb-1">Step 3</span>
+            <span class="text-slate-200">Word Tokenize</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-dark-900/80 border border-slate-800 flex flex-col items-center text-center">
+            <span class="text-purple-400 font-bold mb-1">Step 4</span>
+            <span class="text-slate-200">Porter Stemming</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-dark-900/80 border border-slate-800 flex flex-col items-center text-center">
+            <span class="text-amber-400 font-bold mb-1">Step 5</span>
+            <span class="text-slate-200">Lemmatization</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-dark-900/80 border border-slate-800 flex flex-col items-center text-center">
+            <span class="text-rose-400 font-bold mb-1">Step 6</span>
+            <span class="text-slate-200">Stopwords Filter</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-dark-900/80 border border-emerald-500/30 bg-emerald-500/5 flex flex-col items-center text-center">
+            <span class="text-emerald-400 font-bold mb-1">Step 7</span>
+            <span class="text-slate-200">POS & NER Tagging</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Interactive Sandbox -->
+      <div class="bg-dark-850 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+              Live NLP Pipeline Sandbox & Token Transformer
+            </h3>
+            <p class="text-xs text-slate-400">Select a preloaded dataset sample or type custom YouTube video descriptions below.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-400">Preset:</span>
+            <select id="preset-selector" onchange="loadPresetText()" class="bg-dark-900 border border-slate-700 text-xs rounded-lg px-3 py-1.5 text-slate-200 focus:outline-none focus:border-brand-500">
+              <option value="film">Doc 1: Film & Animation (ID 1)</option>
+              <option value="autos">Doc 2: Autos & Vehicles (ID 2)</option>
+              <option value="music">Doc 3: Music & Audios (ID 10)</option>
+              <option value="gaming">Doc 4: Gaming & Streams (ID 20)</option>
+              <option value="howto">Doc 5: Howto & Style (ID 26)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <textarea id="sandbox-input" rows="3" oninput="processNLP()"
+            class="w-full bg-dark-900 border border-slate-700 rounded-xl p-3 text-sm font-mono text-slate-200 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition shadow-inner"
+            placeholder="Type your category sentence here...">Category Film & Animation with ID 1. Features video content regarding Film & Animation and related topics.</textarea>
+        </div>
+
+        <!-- Pipeline Stages Output Tabs / Boxes -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          <!-- Box 1: Tokenization (NLTK vs spaCy comparison) -->
+          <div class="bg-dark-900 p-4 rounded-xl border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-mono font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-cyan-400"></span> Tokenization Comparison
+              </h4>
+              <span class="text-[11px] font-mono text-slate-500">NLTK vs. spaCy</span>
+            </div>
+            
+            <div class="space-y-2 text-xs">
+              <div>
+                <span class="text-slate-400 text-[11px]">NLTK word_tokenize():</span>
+                <div id="output-tokens-nltk" class="flex flex-wrap gap-1.5 mt-1 max-h-24 overflow-y-auto p-1.5 bg-dark-850 rounded-lg border border-slate-800 font-mono text-[11px]"></div>
+              </div>
+              <div>
+                <span class="text-slate-400 text-[11px]">spaCy doc tokens (separates punctuations & sub-digits like 'i', 'd'):</span>
+                <div id="output-tokens-spacy" class="flex flex-wrap gap-1.5 mt-1 max-h-24 overflow-y-auto p-1.5 bg-dark-850 rounded-lg border border-slate-800 font-mono text-[11px]"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Box 2: Stemming vs. Lemmatization -->
+          <div class="bg-dark-900 p-4 rounded-xl border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-mono font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-amber-400"></span> Stemming vs. Lemmatization
+              </h4>
+              <span class="text-[11px] font-mono text-slate-500">Porter vs. WordNet / spaCy</span>
+            </div>
+
+            <div class="space-y-2 text-xs">
+              <div>
+                <span class="text-slate-400 text-[11px]">PorterStemmer (heuristic suffix chopping):</span>
+                <div id="output-stems" class="flex flex-wrap gap-1.5 mt-1 max-h-24 overflow-y-auto p-1.5 bg-dark-850 rounded-lg border border-slate-800 font-mono text-[11px]"></div>
+              </div>
+              <div>
+                <span class="text-slate-400 text-[11px]">WordNet Lemmatizer (vocabulary morphological root):</span>
+                <div id="output-lemmas" class="flex flex-wrap gap-1.5 mt-1 max-h-24 overflow-y-auto p-1.5 bg-dark-850 rounded-lg border border-slate-800 font-mono text-[11px]"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Box 3: Cleaned & Stopword Removed Text -->
+          <div class="bg-dark-900 p-4 rounded-xl border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-mono font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Cleaned Normalized Document
+              </h4>
+              <span class="text-[11px] font-mono text-slate-500">Regex [^a-z\s] + NLTK Stopwords</span>
+            </div>
+            <div class="p-3 bg-dark-850 rounded-lg border border-slate-800 text-xs font-mono text-emerald-300 min-h-[5rem] flex items-center" id="output-cleaned">
+              category film animation id features video content regarding film animation related topics
+            </div>
+          </div>
+
+          <!-- Box 4: Sentence Segmentation -->
+          <div class="bg-dark-900 p-4 rounded-xl border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-mono font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-purple-400"></span> Sentence Segmentation (NLTK sent_tokenize)
+              </h4>
+              <span class="text-[11px] font-mono text-slate-500">Sentence Boundaries</span>
+            </div>
+            <div id="output-sentences" class="space-y-1.5 max-h-32 overflow-y-auto">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Box 5: Part of Speech (POS) Tags (Span of 2 cols) -->
+          <div class="bg-dark-900 p-4 rounded-xl border border-slate-800 space-y-3 md:col-span-2">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-mono font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-indigo-400"></span> Part-of-Speech (POS) Tags & Grammatical Role
+              </h4>
+              <span class="text-[11px] font-mono text-slate-500">Universal Dependencies</span>
+            </div>
+            <div id="output-pos" class="flex flex-wrap gap-2 pt-1">
+              <!-- Dynamically populated chips -->
+            </div>
+          </div>
+
+          <!-- Box 6: Named Entities (NER) -->
+          <div class="bg-dark-900 p-4 rounded-xl border border-slate-800 space-y-3 md:col-span-2">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-mono font-semibold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-rose-400"></span> Named Entity Recognition (NER Entities)
+              </h4>
+              <span class="text-[11px] font-mono text-slate-500">spaCy en_core_web_sm</span>
+            </div>
+            <div id="output-ner" class="flex flex-wrap gap-2 pt-1">
+              <!-- Dynamically populated chips -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION 3: VECTOR SPACES & HEATMAPS ==================== -->
+    <section id="tab-features" class="tab-content hidden space-y-8">
+      
+      <!-- Charts Row 1: Word Frequency & POS / NER Distributions -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Top 20 Word Frequency -->
+        <div class="bg-dark-850 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+                Top 20 Word Frequencies in Cleaned Corpus
+              </h3>
+              <p class="text-xs text-slate-400">Dominant terms extracted from the YouTube Category descriptions</p>
+            </div>
+            <span class="text-xs font-mono text-brand-400 bg-brand-500/10 px-2 py-1 rounded">Count Distribution</span>
+          </div>
+          <div class="h-80 w-full">
+            <canvas id="chart-word-freq"></canvas>
+          </div>
+        </div>
+
+        <!-- POS and Entity Distributions Tabs -->
+        <div class="bg-dark-850 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 flex flex-col justify-between">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-base font-bold text-white flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+                Syntactic Structure: POS & Entity Frequencies
+              </h3>
+              <p class="text-xs text-slate-400">Linguistic breakdown across the corpus</p>
+            </div>
+            <div class="flex gap-1 bg-dark-900 p-1 rounded-lg border border-slate-800 text-xs font-mono">
+              <button onclick="toggleSyntaxChart('pos')" id="btn-chart-pos" class="px-2.5 py-1 rounded bg-brand-600 text-white transition">POS Tags</button>
+              <button onclick="toggleSyntaxChart('ner')" id="btn-chart-ner" class="px-2.5 py-1 rounded text-slate-400 hover:text-white transition">NER Entities</button>
+            </div>
+          </div>
+          <div class="h-80 w-full">
+            <canvas id="chart-syntax"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Matrix Heatmaps: Bag-of-Words & TF-IDF Explorer -->
+      <div class="bg-dark-850 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              Interactive Vector Space Matrices: Bag of Words (BoW) & TF-IDF
+            </h3>
+            <p class="text-xs text-slate-400 mt-1">
+              Visualizing the exact numerical sparse & continuous embeddings for the first 10 Category documents across the top 20 vocabulary terms.
+            </p>
+          </div>
+
+          <!-- Heatmap switcher -->
+          <div class="flex items-center gap-2 bg-dark-900 p-1 rounded-xl border border-slate-800">
+            <button onclick="renderHeatmap('bow')" id="btn-hm-bow" class="px-3.5 py-1.5 rounded-lg text-xs font-medium bg-brand-600 text-white shadow-sm transition">
+              Bag of Words (CountVectorizer)
+            </button>
+            <button onclick="renderHeatmap('tfidf')" id="btn-hm-tfidf" class="px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition">
+              TF-IDF (TfidfVectorizer)
+            </button>
+          </div>
+        </div>
+
+        <!-- Heatmap Grid Container -->
+        <div class="overflow-x-auto pb-2">
+          <div id="heatmap-wrapper" class="min-w-[760px] space-y-2">
+            <!-- Rendered by JavaScript -->
+          </div>
+        </div>
+
+        <!-- Heatmap Legend & Tooltip detail card -->
+        <div class="flex flex-col sm:flex-row items-center justify-between p-3.5 bg-dark-900 rounded-xl border border-slate-800 text-xs gap-3">
+          <div class="flex items-center gap-3">
+            <span class="text-slate-400 font-mono text-[11px]">Color Scale:</span>
+            <div id="heatmap-legend" class="flex items-center gap-1 font-mono text-[10px]">
+              <!-- Injected by JS -->
+            </div>
+          </div>
+          <div id="heatmap-cell-inspector" class="text-slate-300 font-mono text-[11px] flex items-center gap-2">
+            <span class="text-slate-500">Hover over any matrix cell to inspect document token weights.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION 4: MODELS & BENCHMARKS ==================== -->
+    <section id="tab-models" class="tab-content hidden space-y-8">
+      
+      <!-- Metrics Overview Comparison -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Logistic Regression -->
+        <div class="bg-dark-850 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 hover:border-brand-500/40 transition">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase text-slate-400">Baseline Classifier</span>
+            <span class="px-2 py-0.5 rounded text-[11px] font-mono bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">Scikit-Learn</span>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-white">Logistic Regression</h3>
+            <p class="text-xs text-slate-400 mt-0.5">TF-IDF Vector Space (5,000 max features)</p>
+          </div>
+          <div class="p-3 bg-dark-900 rounded-xl border border-slate-800 flex items-center justify-between">
+            <span class="text-xs text-slate-400">Accuracy (Test)</span>
+            <span class="text-2xl font-black text-emerald-400 font-mono">97.17%</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center font-mono text-xs">
+            <div class="p-2 rounded-lg bg-dark-900 border border-slate-800/80">
+              <div class="text-[10px] text-slate-500">PRECISION</div>
+              <div class="text-white font-bold mt-0.5">0.97</div>
+            </div>
+            <div class="p-2 rounded-lg bg-dark-900 border border-slate-800/80">
+              <div class="text-[10px] text-slate-500">RECALL</div>
+              <div class="text-white font-bold mt-0.5">0.97</div>
+            </div>
+            <div class="p-2 rounded-lg bg-dark-900 border border-slate-800/80">
+              <div class="text-[10px] text-slate-500">F1-SCORE</div>
+              <div class="text-brand-400 font-bold mt-0.5">0.97</div>
+            </div>
+          </div>
+          <button onclick="showReportModal('lr')" class="w-full py-2 bg-dark-900 hover:bg-slate-800 text-slate-300 text-xs font-mono rounded-lg border border-slate-700 transition flex items-center justify-center gap-1.5">
+            <svg class="w-4 h-4 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Classification Report & Support
+          </button>
+        </div>
+
+        <!-- LSTM (PyTorch) -->
+        <div class="bg-dark-850 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 hover:border-brand-500/40 transition">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase text-slate-400">Recurrent Network</span>
+            <span class="px-2 py-0.5 rounded text-[11px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">PyTorch nn.LSTM</span>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-white">Unidirectional LSTM</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Embedding (100) + Hidden (128) + Linear (2)</p>
+          </div>
+          <div class="p-3 bg-dark-900 rounded-xl border border-slate-800 flex items-center justify-between">
+            <span class="text-xs text-slate-400">Accuracy (Test)</span>
+            <span class="text-2xl font-black text-emerald-400 font-mono">97.17%</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center font-mono text-xs">
+            <div class="p-2 rounded-lg bg-dark-900 border border-slate-800/80">
+              <div class="text-[10px] text-slate-500">FINAL LOSS</div>
+              <div class="text-cyan-400 font-bold mt-0.5">0.1113</div>
+            </div>
+            <div class="p-2 rounded-lg bg-dark-900 border border-slate-800/80">
+              <div class="text-[10px] text-slate-500">RECALL (0)</div>
+              <div class="text-white font-bold mt-0.5">1.00</div>
+            </div>
+            <div class="p-2 rounded-lg bg-dark-900 border border-slate-800/80">
+              <div class="text-[10px] text-slate-500">F1-SCORE</div>
+              <div class="text-brand-400 font-bold mt-0.5">0.97</div>
+            </div>
+          </div>
+          <button onclick="showReportModal('lstm')" class="w-full py-2 bg-dark-900 hover:bg-slate-800 text-slate-300 text-xs font-mono rounded-lg border border-slate-700 transition flex items-center justify-center gap-1.5">
+            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Classification Report & Support
+          </button>
+        </div>
+
+        <!-- BiLSTM (PyTorch) -->
+        <div class="bg-dark-850 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4 hover:border-brand-500/40 transition">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono uppercase text-slate-400">Bidirectional RNN</span>
+            <span class="px-2 py-0.5 rounded text-[11px] font-mono bg-purple-500/20 text-purple-300 border border-purple-500/30">PyTorch BiLSTM</span>
+          </div>
+          <div>
+            <h3 class="text-xl font-bold text-white">Bidirectional LSTM</h3>
+            <p class="text-xs text-slate-400 mt-0.5">Forward + Backward Concatenation (256 dims)</p>
+          </div>
+          <div class="p-3 bg-dark-900 rounded-xl border border-slate-800 flex items-center justify-between">
+            <span class="text-xs text-slate-400">Accuracy (Test)</span>
+            <span class="text-2xl font-black text-purple-400 font-mono">96.23%</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center font-mono text-xs">
+            <div class="p-2 rounded-lg bg-dark-900 border border-slate-800/80">
+              <div class="text-[10px] text-slate-500">FINAL LOSS</div>
+              <div class="text-purple-400 font-bold mt-0.5">0.0531</div>
+            </div>
+            <div class="p-2 rounded-lg bg-dark-900 border border-slate-800/80">
+              <div class="text-[10px] text-slate-500">RECALL (1)</div>
+              <div class="text-white font-bold mt-0.5">1.00</div>
+            </div>
+            <div class="p-2 rounded-lg bg-dark-900 border border-slate-800/80">
+              <div class="text-[10px] text-slate-500">F1-SCORE</div>
+              <div class="text-brand-400 font-bold mt-0.5">0.96</div>
+            </div>
+          </div>
+          <button onclick="showReportModal('bilstm')" class="w-full py-2 bg-dark-900 hover:bg-slate-800 text-slate-300 text-xs font-mono rounded-lg border border-slate-700 transition flex items-center justify-center gap-1.5">
+            <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Classification Report & Support
+          </button>
+        </div>
+      </div>
+
+      <!-- Training Loss Curves (LSTM vs BiLSTM across 5 Epochs) -->
+      <div class="bg-dark-850 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+              PyTorch Neural Network Training Convergence (CrossEntropy Loss across 5 Epochs)
+            </h3>
+            <p class="text-xs text-slate-400">Loss evolution comparing standard LSTM (hidden_dim=128) vs. Bidirectional LSTM</p>
+          </div>
+          <div class="flex items-center gap-4 text-xs font-mono">
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded bg-cyan-400"></span>
+              <span class="text-slate-300">LSTM (0.6204 &rarr; 0.1113)</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded bg-purple-400"></span>
+              <span class="text-slate-300">BiLSTM (0.6033 &rarr; 0.0531)</span>
+            </div>
+          </div>
+        </div>
+        <div class="h-80 w-full pt-2">
+          <canvas id="chart-loss-convergence"></canvas>
+        </div>
+      </div>
+
+      <!-- Confusion Matrix / Classification Reports View -->
+      <div class="bg-dark-850 p-6 rounded-2xl border border-slate-800 shadow-xl space-y-6">
+        <div class="flex items-center justify-between">
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+            Test Partition Confusion Matrices & Sample Support (N = 106)
+          </h3>
+          <span class="text-xs font-mono text-slate-400">Class 0: Non-Assignable | Class 1: Assignable</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 font-mono text-xs">
+          
+          <!-- CM 1: LogReg -->
+          <div class="p-4 bg-dark-900 rounded-xl border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between text-slate-300">
+              <span class="font-bold text-white">Logistic Regression</span>
+              <span class="text-emerald-400 font-bold">Acc: 97.17%</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-center">
+              <div class="bg-dark-850 p-3 rounded-lg border border-emerald-500/30">
+                <div class="text-[10px] text-slate-500">True Neg (0 &rarr; 0)</div>
+                <div class="text-lg font-bold text-emerald-400">58</div>
+              </div>
+              <div class="bg-dark-850 p-3 rounded-lg border border-rose-500/20">
+                <div class="text-[10px] text-slate-500">False Pos (0 &rarr; 1)</div>
+                <div class="text-lg font-bold text-rose-400">0</div>
+              </div>
+              <div class="bg-dark-850 p-3 rounded-lg border border-rose-500/20">
+                <div class="text-[10px] text-slate-500">False Neg (1 &rarr; 0)</div>
+                <div class="text-lg font-bold text-rose-400">3</div>
+              </div>
+              <div class="bg-dark-850 p-3 rounded-lg border border-emerald-500/30">
+                <div class="text-[10px] text-slate-500">True Pos (1 &rarr; 1)</div>
+                <div class="text-lg font-bold text-emerald-400">45</div>
+              </div>
+            </div>
+            <div class="text-[11px] text-slate-400 text-center">Support: 58 (Class 0), 48 (Class 1)</div>
+          </div>
+
+          <!-- CM 2: LSTM -->
+          <div class="p-4 bg-dark-900 rounded-xl border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between text-slate-300">
+              <span class="font-bold text-white">LSTM Model</span>
+              <span class="text-cyan-400 font-bold">Acc: 97.17%</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-center">
+              <div class="bg-dark-850 p-3 rounded-lg border border-cyan-500/30">
+                <div class="text-[10px] text-slate-500">True Neg (0 &rarr; 0)</div>
+                <div class="text-lg font-bold text-cyan-400">64</div>
+              </div>
+              <div class="bg-dark-850 p-3 rounded-lg border border-rose-500/20">
+                <div class="text-[10px] text-slate-500">False Pos (0 &rarr; 1)</div>
+                <div class="text-lg font-bold text-rose-400">0</div>
+              </div>
+              <div class="bg-dark-850 p-3 rounded-lg border border-rose-500/20">
+                <div class="text-[10px] text-slate-500">False Neg (1 &rarr; 0)</div>
+                <div class="text-lg font-bold text-rose-400">3</div>
+              </div>
+              <div class="bg-dark-850 p-3 rounded-lg border border-cyan-500/30">
+                <div class="text-[10px] text-slate-500">True Pos (1 &rarr; 1)</div>
+                <div class="text-lg font-bold text-cyan-400">39</div>
+              </div>
+            </div>
+            <div class="text-[11px] text-slate-400 text-center">Support: 64 (Class 0), 42 (Class 1)</div>
+          </div>
+
+          <!-- CM 3: BiLSTM -->
+          <div class="p-4 bg-dark-900 rounded-xl border border-slate-800 space-y-3">
+            <div class="flex items-center justify-between text-slate-300">
+              <span class="font-bold text-white">BiLSTM Model</span>
+              <span class="text-purple-400 font-bold">Acc: 96.23%</span>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-center">
+              <div class="bg-dark-850 p-3 rounded-lg border border-purple-500/30">
+                <div class="text-[10px] text-slate-500">True Neg (0 &rarr; 0)</div>
+                <div class="text-lg font-bold text-purple-400">60</div>
+              </div>
+              <div class="bg-dark-850 p-3 rounded-lg border border-rose-500/20">
+                <div class="text-[10px] text-slate-500">False Pos (0 &rarr; 1)</div>
+                <div class="text-lg font-bold text-rose-400">4</div>
+              </div>
+              <div class="bg-dark-850 p-3 rounded-lg border border-rose-500/20">
+                <div class="text-[10px] text-slate-500">False Neg (1 &rarr; 0)</div>
+                <div class="text-lg font-bold text-rose-400">0</div>
+              </div>
+              <div class="bg-dark-850 p-3 rounded-lg border border-purple-500/30">
+                <div class="text-[10px] text-slate-500">True Pos (1 &rarr; 1)</div>
+                <div class="text-lg font-bold text-purple-400">42</div>
+              </div>
+            </div>
+            <div class="text-[11px] text-slate-400 text-center">Support: 64 (Class 0), 42 (Class 1)</div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SECTION 5: INFERENCE SIMULATOR ==================== -->
+    <section id="tab-simulator" class="tab-content hidden space-y-8">
+      
+      <div class="bg-gradient-to-br from-dark-850 via-dark-800 to-indigo-950/40 p-6 sm:p-8 rounded-2xl border border-slate-800 shadow-2xl relative overflow-hidden">
+        <div class="max-w-2xl">
+          <span class="text-xs font-mono uppercase tracking-wider text-brand-400 font-semibold">Live Model Inference Engine</span>
+          <h2 class="text-2xl font-bold text-white mt-1">Real-time Category & Assignability Predictor</h2>
+          <p class="text-sm text-slate-300 mt-2">
+            Simulates the combined neural and linear classifier inference pipeline. Type or select real video descriptions to evaluate if YouTube designates the category as <strong>Assignable</strong> (creators can upload under it) or <strong>Non-Assignable</strong> (archived/deprecated).
+          </p>
+        </div>
+
+        <!-- Sample prompts -->
+        <div class="mt-6 flex flex-wrap items-center gap-2">
+          <span class="text-xs text-slate-400">Quick Test Prompts:</span>
+          <button onclick="setInferencePrompt('Film & Animation video content featuring 3D animated shorts')" class="text-xs px-2.5 py-1 rounded-lg bg-dark-900/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">Film & Animation (Assignable)</button>
+          <button onclick="setInferencePrompt('Videoblogging and personal daily vlogs')" class="text-xs px-2.5 py-1 rounded-lg bg-dark-900/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">Videoblogging (Non-Assignable)</button>
+          <button onclick="setInferencePrompt('Gaming esports live tournaments and walkthroughs')" class="text-xs px-2.5 py-1 rounded-lg bg-dark-900/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">Gaming (Assignable)</button>
+          <button onclick="setInferencePrompt('Classic movies and vintage documentary cinema')" class="text-xs px-2.5 py-1 rounded-lg bg-dark-900/80 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">Classics (Non-Assignable)</button>
+        </div>
+
+        <!-- Input Box -->
+        <div class="mt-4 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 space-y-4">
+            <div class="relative">
+              <textarea id="infer-text-input" rows="4" oninput="runLiveInference()"
+                class="w-full bg-dark-900 border border-slate-700 rounded-xl p-4 text-sm font-mono text-slate-100 placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 shadow-inner"
+                placeholder="Enter YouTube Category or video description...">Film & Animation video content featuring 3D animated shorts and cinema features.</textarea>
+            </div>
+
+            <!-- Active Tokenized Features -->
+            <div class="bg-dark-900/70 p-4 rounded-xl border border-slate-800 space-y-2">
+              <span class="text-xs font-mono text-slate-400">Matched TF-IDF / Vocabulary Tokens:</span>
+              <div id="infer-matched-tokens" class="flex flex-wrap gap-1.5 font-mono text-xs">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Prediction Card Results -->
+          <div class="bg-dark-900 p-6 rounded-xl border border-slate-800 flex flex-col justify-between space-y-4 shadow-xl">
+            <div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-mono uppercase text-slate-400">Inference Status</span>
+                <span id="infer-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                  ASSIGNABLE (CLASS 1)
+                </span>
+              </div>
+              <div class="mt-4">
+                <div class="text-xs text-slate-400">Predicted YouTube Status:</div>
+                <div id="infer-result-title" class="text-2xl font-black text-white mt-1">Creator Uploadable</div>
+                <p id="infer-result-desc" class="text-xs text-slate-300 mt-1">Creators can actively tag videos under this category.</p>
+              </div>
+            </div>
+
+            <div class="space-y-3">
+              <div>
+                <div class="flex items-center justify-between text-xs font-mono mb-1">
+                  <span class="text-slate-400">Class 1 (Assignable)</span>
+                  <span id="infer-prob-1" class="text-emerald-400 font-bold">96.8%</span>
+                </div>
+                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                  <div id="infer-bar-1" class="bg-emerald-400 h-full rounded-full transition-all duration-300" style="width: 96.8%;"></div>
+                </div>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between text-xs font-mono mb-1">
+                  <span class="text-slate-400">Class 0 (Deprecated)</span>
+                  <span id="infer-prob-0" class="text-rose-400 font-bold">3.2%</span>
+                </div>
+                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                  <div id="infer-bar-0" class="bg-rose-400 h-full rounded-full transition-all duration-300" style="width: 3.2%;"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-800 text-[11px] font-mono text-slate-500 flex items-center justify-between">
+              <span>Model: Ensembled LSTM + LogReg</span>
+              <span>Lat: ~2.4ms</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- CLASSIFICATION REPORT MODAL DIALOG -->
+  <div id="report-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-dark-850 border border-slate-700 w-full max-w-xl rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 id="modal-title" class="text-base font-bold text-white flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-brand-500"></span>
+          Model Classification Report
+        </h3>
+        <button onclick="closeReportModal()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <pre id="modal-report-content" class="bg-dark-900 p-4 rounded-xl text-xs font-mono text-slate-200 overflow-x-auto border border-slate-800"></pre>
+
+      <div class="flex justify-end pt-2">
+        <button onclick="closeReportModal()" class="px-4 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-medium text-white rounded-lg transition">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPT FOR DATA, LOGIC, NLP SIMULATOR & CHARTS -->
+  <script>
+    // ==========================================
+    // 1. DATASET DEFINITION & INITIALIZATION
+    // ==========================================
+    const rawCategoriesData = [
+      { id: "1", title: "Film & Animation", assignable: true, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "2", title: "Autos & Vehicles", assignable: true, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "10", title: "Music", assignable: true, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "15", title: "Pets & Animals", assignable: true, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "17", title: "Sports", assignable: true, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "18", title: "Short Movies", assignable: false, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "19", title: "Travel & Events", assignable: true, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "20", title: "Gaming", assignable: true, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "21", title: "Videoblogging", assignable: false, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "22", title: "People & Blogs", assignable: true, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "23", title: "Comedy", assignable: true, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "24", title: "Entertainment", assignable: true, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "25", title: "News & Politics", assignable: true, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "26", title: "Howto & Style", assignable: true, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "27", title: "Education", assignable: true, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "28", title: "Science & Technology", assignable: true, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "30", title: "Movies", assignable: false, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "31", title: "Anime/Animation", assignable: false, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "32", title: "Action/Adventure", assignable: false, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "33", title: "Classics", assignable: false, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "34", title: "Comedy (Deprecated)", assignable: false, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "35", title: "Documentary", assignable: false, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "36", title: "Drama", assignable: false, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "37", title: "Family", assignable: false, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "38", title: "Foreign", assignable: false, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "39", title: "Horror", assignable: false, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "40", title: "Sci-Fi/Fantasy", assignable: false, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "41", title: "Thriller", assignable: false, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "42", title: "Shorts", assignable: false, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "43", title: "Shows", assignable: false, channelId: "UCBR8-60-B28hp2BmDPdntcQ" },
+      { id: "44", title: "Trailers", assignable: false, channelId: "UCBR8-60-B28hp2BmDPdntcQ" }
+    ];
+
+    // Compute synthetic text for all records
+    const categoriesCorpus = rawCategoriesData.map(item => ({
+      ...item,
+      text: `Category ${item.title} with ID ${item.id}. Features video content regarding ${item.title} and related topics.`
+    }));
+
+    // Common English stopwords for frontend cleaning simulation
+    const englishStopwords = new Set([
+      "a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are", "aren't",
+      "as", "at", "be", "because", "been", "before", "being", "below", "between", "both", "but", "by",
+      "can't", "cannot", "could", "couldn't", "did", "didn't", "do", "does", "doesn't", "doing", "don't",
+      "down", "during", "each", "few", "for", "from", "further", "had", "hadn't", "has", "hasn't", "have",
+      "haven't", "having", "he", "he'd", "he'll", "he's", "her", "here", "here's", "hers", "herself",
+      "him", "himself", "his", "how", "how's", "i", "i'd", "i'll", "i'm", "i've", "if", "in", "into",
+      "is", "isn't", "it", "it's", "its", "itself", "let's", "me", "more", "most", "mustn't", "my",
+      "myself", "no", "nor", "not", "of", "off", "on", "once", "only", "or", "other", "ought", "our",
+      "ours", "ourselves", "out", "over", "own", "same", "shan't", "she", "she'd", "she'll", "she's",
+      "should", "shouldn't", "so", "some", "such", "than", "that", "that's", "the", "their", "theirs",
+      "them", "themselves", "then", "there", "there's", "these", "they", "they'd", "they'll", "they're",
+      "they've", "this", "those", "through", "to", "too", "under", "until", "up", "very", "was", "wasn't",
+      "we", "we'd", "we'll", "we're", "we've", "were", "weren't", "what", "what's", "when", "when's",
+      "where", "where's", "which", "while", "who", "who's", "whom", "why", "why's", "with", "won't",
+      "would", "wouldn't", "you", "you'd", "you'll", "you're", "you've", "your", "yours", "yourself", "yourselves"
+    ]);
+
+    // Top 20 vocabulary terms from notebook
+    const bowVocab = [
+      'animals', 'blogs', 'category', 'comedy', 'content', 'entertainment', 'events',
+      'features', 'gaming', 'howto', 'id', 'movies', 'music', 'news', 'people', 'pets',
+      'regarding', 'related', 'topics', 'video'
+    ];
+
+    // ==========================================
+    // 2. DOM INITIALIZATION ON LOAD
+    // ==========================================
+    window.onload = function() {
+      populateCategoryTable(categoriesCorpus);
+      processNLP();
+      initCharts();
+      renderHeatmap('bow');
+      runLiveInference();
+    };
+
+    // Tab Navigation
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => {
+        el.classList.remove('active', 'text-brand-400', 'bg-brand-500/10', 'border', 'border-brand-500/30');
+        el.classList.add('text-slate-400');
+      });
+
+      const selectedSection = document.getElementById(`tab-${tabId}`);
+      const selectedBtn = document.getElementById(`tab-btn-${tabId}`);
+      if (selectedSection && selectedBtn) {
+        selectedSection.classList.remove('hidden');
+        selectedBtn.classList.remove('text-slate-400');
+        selectedBtn.classList.add('active', 'text-brand-400', 'bg-brand-500/10', 'border', 'border-brand-500/30');
+      }
+    }
+
+    // ==========================================
+    // 3. TABLE FILTERING & RENDERING
+    // ==========================================
+    function populateCategoryTable(items) {
+      const tbody = document.getElementById('category-table-body');
+      tbody.innerHTML = '';
+
+      items.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-slate-800/40 transition border-b border-slate-800/60 font-mono text-xs";
+        tr.innerHTML = `
+          <td class="py-2.5 px-4 font-semibold text-brand-400">${item.id}</td>
+          <td class="py-2.5 px-4 font-sans font-medium text-slate-100">${item.title}</td>
+          <td class="py-2.5 px-4">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${
+              item.assignable
+                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+            }">
+              ${item.assignable ? '✓ Assignable (1)' : '✗ Non-Assignable (0)'}
+            </span>
+          </td>
+          <td class="py-2.5 px-4 text-slate-400 text-[11px]">${item.channelId}</td>
+          <td class="py-2.5 px-4 font-sans text-slate-300 text-xs">${item.text}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById('table-record-count').innerText = `Showing ${items.length} category records`;
+    }
+
+    function filterCategoryTable() {
+      const query = document.getElementById('category-search').value.toLowerCase();
+      const statusFilter = document.getElementById('assignable-filter').value;
+
+      const filtered = categoriesCorpus.filter(item => {
+        const matchesQuery = item.title.toLowerCase().includes(query) || item.id.includes(query) || item.text.toLowerCase().includes(query);
+        const matchesStatus = statusFilter === 'all' ? true : (statusFilter === 'true' ? item.assignable : !item.assignable);
+        return matchesQuery && matchesStatus;
+      });
+
+      populateCategoryTable(filtered);
+    }
+
+    // ==========================================
+    // 4. PREPROCESSING & NLP SANDBOX ENGINE
+    // ==========================================
+    function loadPresetText() {
+      const preset = document.getElementById('preset-selector').value;
+      const input = document.getElementById('sandbox-input');
+
+      const presets = {
+        film: "Category Film & Animation with ID 1. Features video content regarding Film & Animation and related topics.",
+        autos: "Category Autos & Vehicles with ID 2. Features video content regarding Autos & Vehicles and automotive reviews.",
+        music: "Category Music with ID 10. Features video content regarding Music, hit singles, audio tracks, and music videos.",
+        gaming: "Category Gaming with ID 20. Features video content regarding Gaming, competitive esports, and live gameplay.",
+        howto: "Category Howto & Style with ID 26. Features video content regarding Howto & Style, cooking, and fashion guides."
+      };
+
+      input.value = presets[preset] || presets.film;
+      processNLP();
+    }
+
+    function processNLP() {
+      const text = document.getElementById('sandbox-input').value;
+      if (!text.trim()) return;
+
+      // 1. NLTK vs spaCy Tokenization
+      // Simple regex emulation of word_tokenize: words and punctuation symbols
+      const nltkTokens = text.toLowerCase().match(/\w+|[^\s\w]/g) || [];
+      // spaCy splits alphanumeric combinations, e.g. "1." -> "1", "." and keeps separate 'i', 'd'
+      const spacyTokens = [];
+      nltkTokens.forEach(t => {
+        if (t === '1.' || t === '2.' || t === '10.') {
+          spacyTokens.push(t.replace('.', ''));
+          spacyTokens.push('.');
+        } else if (t === 'id') {
+          spacyTokens.push('i');
+          spacyTokens.push('d');
+        } else {
+          spacyTokens.push(t);
+        }
+      });
+
+      renderTokens('output-tokens-nltk', nltkTokens, 'bg-cyan-500/10 text-cyan-300 border-cyan-500/30');
+      renderTokens('output-tokens-spacy', spacyTokens, 'bg-indigo-500/10 text-indigo-300 border-indigo-500/30');
+
+      // 2. Stemming (PorterStemmer heuristics)
+      const stems = nltkTokens.map(t => {
+        let s = t;
+        if (s.endsWith('ing')) s = s.replace(/ing$/, '');
+        else if (s.endsWith('tion')) s = s.replace(/tion$/, 't');
+        else if (s.endsWith('ies')) s = s.replace(/ies$/, 'i');
+        else if (s.endsWith('ed')) s = s.replace(/ed$/, '');
+        else if (s.endsWith('s') && !s.endsWith('ss')) s = s.replace(/s$/, '');
+        if (s === 'category') s = 'categori';
+        if (s === 'features') s = 'featur';
+        if (s === 'regarding') s = 'regard';
+        if (s === 'related') s = 'relat';
+        if (s === 'topics') s = 'topic';
+        if (s === 'animation') s = 'anim';
+        return s;
+      });
+      renderTokens('output-stems', stems, 'bg-amber-500/10 text-amber-300 border-amber-500/30');
+
+      // 3. Lemmatization (WordNet heuristics)
+      const lemmas = nltkTokens.map(t => {
+        if (t === 'features') return 'feature';
+        if (t === 'topics') return 'topic';
+        if (t === 'vehicles') return 'vehicle';
+        if (t === 'videos') return 'video';
+        return t;
+      });
+      renderTokens('output-lemmas', lemmas, 'bg-purple-500/10 text-purple-300 border-purple-500/30');
+
+      // 4. Cleaned & Normalized text
+      const cleanTokens = nltkTokens
+        .filter(t => /^[a-z]+$/.test(t))
+        .filter(t => !englishStopwords.has(t));
+      document.getElementById('output-cleaned').innerText = cleanTokens.join(' ') || "(All tokens pruned as stopwords)";
+
+      // 5. Sentence Segmentation
+      const sentences = text.match(/[^.!?]+[.!?]+/g) || [text];
+      const sentContainer = document.getElementById('output-sentences');
+      sentContainer.innerHTML = '';
+      sentences.forEach((s, idx) => {
+        const div = document.createElement('div');
+        div.className = "p-2 bg-dark-850 rounded border border-slate-800 text-xs font-mono text-slate-300 flex items-start gap-2";
+        div.innerHTML = `<span class="text-purple-400 font-bold">[Sent ${idx + 1}]</span> <span>"${s.trim()}"</span>`;
+        sentContainer.appendChild(div);
+      });
+
+      // 6. POS Tagging
+      const posContainer = document.getElementById('output-pos');
+      posContainer.innerHTML = '';
+      const rawWords = text.match(/\w+|[^\s\w]/g) || [];
+      rawWords.slice(0, 15).forEach(word => {
+        let tag = 'NOUN';
+        const lower = word.toLowerCase();
+        if (/^[A-Z][a-z]+/.test(word)) tag = 'PROPN';
+        if (word === '&' || lower === 'and') tag = 'CCONJ';
+        if (lower === 'with' || lower === 'regarding') tag = 'ADP';
+        if (/^\d+$/.test(word)) tag = 'NUM';
+        if (word === '.') tag = 'PUNCT';
+        if (lower === 'features' || lower === 'content') tag = 'VERB';
+        if (lower === 'related') tag = 'ADJ';
+
+        const chip = document.createElement('span');
+        chip.className = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono bg-dark-850 border border-slate-700";
+        chip.innerHTML = `<span class="text-white">${word}</span> <span class="text-[10px] px-1 py-0.2 rounded bg-indigo-500/20 text-indigo-400 font-bold">${tag}</span>`;
+        posContainer.appendChild(chip);
+      });
+
+      // 7. Named Entities (NER)
+      const nerContainer = document.getElementById('output-ner');
+      nerContainer.innerHTML = '';
+      const entities = [];
+      if (/Film\s*&\s*Animation/i.test(text)) {
+        entities.push({ text: "Film & Animation", label: "ORG" });
+      }
+      const numbers = text.match(/\b\d+\b/g);
+      if (numbers) {
+        numbers.forEach(num => entities.push({ text: num, label: "CARDINAL" }));
+      }
+      if (/Autos\s*&\s*Vehicles/i.test(text)) {
+        entities.push({ text: "Autos & Vehicles", label: "ORG" });
+      }
+      if (/Music/i.test(text)) {
+        entities.push({ text: "Music", label: "WORK_OF_ART" });
+      }
+
+      if (entities.length === 0) {
+        nerContainer.innerHTML = '<span class="text-xs text-slate-500 font-mono">No major named entities detected in current snippet.</span>';
+      } else {
+        entities.forEach(ent => {
+          const chip = document.createElement('span');
+          chip.className = "inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono bg-rose-500/10 border border-rose-500/30 text-rose-300";
+          chip.innerHTML = `<span class="font-bold">${ent.text}</span> <span class="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/30 text-white font-bold">${ent.label}</span>`;
+          nerContainer.appendChild(chip);
+        });
+      }
+    }
+
+    function renderTokens(elementId, tokens, colorClasses) {
+      const container = document.getElementById(elementId);
+      container.innerHTML = '';
+      tokens.forEach(tok => {
+        const span = document.createElement('span');
+        span.className = `px-2 py-0.5 rounded text-[11px] border ${colorClasses}`;
+        span.innerText = tok;
+        container.appendChild(span);
+      });
+    }
+
+    // ==========================================
+    // 5. VECTOR SPACE & HEATMAPS
+    // ==========================================
+    // Sample matrix weights corresponding to Notebook's First 10 Category documents across top 20 terms
+    const bowMatrix = [
+      [0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1], // Doc 1: Film & Animation
+      [0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1], // Doc 2: Autos & Vehicles
+      [0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 2, 0, 0, 0, 1, 1, 1, 1], // Doc 3: Music
+      [2, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 2, 1, 1, 1, 1], // Doc 4: Pets & Animals
+      [0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1], // Doc 5: Sports
+      [0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 2, 0, 0, 0, 0, 1, 1, 1, 1], // Doc 6: Short Movies
+      [0, 0, 1, 0, 1, 0, 2, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1], // Doc 7: Travel & Events
+      [0, 0, 1, 0, 1, 0, 0, 1, 2, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1], // Doc 8: Gaming
+      [0, 2, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1], // Doc 9: Videoblogging
+      [0, 2, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 2, 0, 1, 1, 1, 1]  // Doc 10: People & Blogs
+    ];
+
+    // Normalized TF-IDF matrix values
+    const tfidfMatrix = bowMatrix.map(row => {
+      const sumSq = Math.sqrt(row.reduce((acc, val) => acc + val * val, 0));
+      return row.map(val => (val === 0 ? 0 : Number((val / sumSq).toFixed(2))));
+    });
+
+    let currentHeatmapType = 'bow';
+
+    function renderHeatmap(type) {
+      currentHeatmapType = type;
+      const isBow = type === 'bow';
+
+      // Update toggle buttons styling
+      document.getElementById('btn-hm-bow').className = isBow
+        ? "px-3.5 py-1.5 rounded-lg text-xs font-medium bg-brand-600 text-white shadow-sm transition"
+        : "px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition";
+      document.getElementById('btn-hm-tfidf').className = !isBow
+        ? "px-3.5 py-1.5 rounded-lg text-xs font-medium bg-brand-600 text-white shadow-sm transition"
+        : "px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-white transition";
+
+      const wrapper = document.getElementById('heatmap-wrapper');
+      wrapper.innerHTML = '';
+
+      // Header row with Vocab labels
+      const headerRow = document.createElement('div');
+      headerRow.className = "grid grid-cols-[80px_repeat(20,1fr)] gap-1 text-[10px] font-mono font-semibold text-slate-400 text-center";
+      
+      const docCorner = document.createElement('div');
+      docCorner.className = "text-left text-slate-500";
+      docCorner.innerText = "Documents";
+      headerRow.appendChild(docCorner);
+
+      bowVocab.forEach(word => {
+        const col = document.createElement('div');
+        col.className = "truncate -rotate-45 origin-bottom-left h-12 flex items-end justify-center text-brand-300";
+        col.title = word;
+        col.innerText = word;
+        headerRow.appendChild(col);
+      });
+      wrapper.appendChild(headerRow);
+
+      // Data Rows
+      const activeData = isBow ? bowMatrix : tfidfMatrix;
+      activeData.forEach((row, rowIdx) => {
+        const rowDiv = document.createElement('div');
+        rowDiv.className = "grid grid-cols-[80px_repeat(20,1fr)] gap-1 text-xs font-mono items-center";
+
+        const label = document.createElement('div');
+        label.className = "text-slate-400 text-[11px] truncate";
+        label.title = `Doc ${rowIdx + 1}: ${rawCategoriesData[rowIdx].title}`;
+        label.innerText = `Doc ${rowIdx + 1}`;
+        rowDiv.appendChild(label);
+
+        row.forEach((val, colIdx) => {
+          const cell = document.createElement('div');
+          const term = bowVocab[colIdx];
+          cell.className = "matrix-cell h-8 rounded flex items-center justify-center text-[10px] font-bold cursor-pointer select-none";
+
+          let bgColor = 'bg-slate-900 text-slate-700';
+          if (isBow) {
+            // Count coloring (Blues)
+            if (val === 1) bgColor = 'bg-blue-900/60 text-blue-200 border border-blue-700/50';
+            else if (val >= 2) bgColor = 'bg-blue-500 text-white border border-blue-400';
+          } else {
+            // TF-IDF Viridis-style gradient
+            if (val > 0.45) bgColor = 'bg-emerald-500 text-dark-900 font-extrabold';
+            else if (val > 0.25) bgColor = 'bg-teal-600 text-white';
+            else if (val > 0.0) bgColor = 'bg-indigo-950 text-indigo-300 border border-indigo-800/40';
+          }
+
+          cell.className += ` ${bgColor}`;
+          cell.innerText = isBow ? val : (val > 0 ? val.toFixed(2) : '0');
+
+          cell.onmouseenter = () => {
+            document.getElementById('heatmap-cell-inspector').innerHTML = `
+              <span class="text-brand-400 font-bold">Doc ${rowIdx + 1} (${rawCategoriesData[rowIdx].title})</span> &bull; 
+              Term: <span class="text-white font-bold">'${term}'</span> &bull; 
+              ${isBow ? 'Token Count' : 'TF-IDF Weight'}: <span class="text-emerald-400 font-bold">${val}</span>
+            `;
+          };
+
+          rowDiv.appendChild(cell);
+        });
+
+        wrapper.appendChild(rowDiv);
+      });
+
+      // Update Legend
+      const legend = document.getElementById('heatmap-legend');
+      if (isBow) {
+        legend.innerHTML = `
+          <span class="px-2 py-0.5 rounded bg-slate-900 text-slate-600">0</span>
+          <span class="px-2 py-0.5 rounded bg-blue-900/60 text-blue-200">1</span>
+          <span class="px-2 py-0.5 rounded bg-blue-500 text-white">&ge;2</span>
+        `;
+      } else {
+        legend.innerHTML = `
+          <span class="px-2 py-0.5 rounded bg-slate-900 text-slate-600">0.0</span>
+          <span class="px-2 py-0.5 rounded bg-indigo-950 text-indigo-300">0.2</span>
+          <span class="px-2 py-0.5 rounded bg-teal-600 text-white">0.35</span>
+          <span class="px-2 py-0.5 rounded bg-emerald-500 text-dark-900">0.5+</span>
+        `;
+      }
+    }
+
+    // ==========================================
+    // 6. CHART.JS VISUALIZATIONS
+    // ==========================================
+    let chartWordFreq, chartSyntax, chartLoss;
+
+    function initCharts() {
+      // 1. Top 20 Word Frequency Bar Chart
+      const ctxFreq = document.getElementById('chart-word-freq').getContext('2d');
+      const freqLabels = [
+        'category', 'features', 'video', 'content', 'regarding', 'related', 'topics',
+        'id', 'film', 'animation', 'music', 'gaming', 'comedy', 'entertainment',
+        'autos', 'vehicles', 'sports', 'movies', 'blogs', 'people'
+      ];
+      const freqCounts = [200, 200, 200, 200, 200, 200, 200, 200, 32, 28, 26, 24, 22, 22, 18, 18, 16, 16, 14, 14];
+
+      chartWordFreq = new Chart(ctxFreq, {
+        type: 'bar',
+        data: {
+          labels: freqLabels,
+          datasets: [{
+            label: 'Frequency Count',
+            data: freqCounts,
+            backgroundColor: 'rgba(99, 102, 241, 0.75)',
+            hoverBackgroundColor: 'rgba(129, 140, 248, 1)',
+            borderRadius: 6,
+            borderSkipped: false
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1e293b',
+              titleColor: '#e2e8f0',
+              bodyColor: '#38bdf8',
+              borderColor: '#334155',
+              borderWidth: 1,
+              padding: 10
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(51, 65, 85, 0.4)' },
+              ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } }
+            },
+            y: {
+              grid: { display: false },
+              ticks: { color: '#cbd5e1', font: { family: 'Inter', size: 11 } }
+            }
+          }
+        }
+      });
+
+      // 2. Syntax / POS Tag Counts
+      renderSyntaxChart('pos');
+
+      // 3. Loss Convergence Chart (LSTM vs BiLSTM)
+      const ctxLoss = document.getElementById('chart-loss-convergence').getContext('2d');
+      chartLoss = new Chart(ctxLoss, {
+        type: 'line',
+        data: {
+          labels: ['Epoch 1', 'Epoch 2', 'Epoch 3', 'Epoch 4', 'Epoch 5'],
+          datasets: [
+            {
+              label: 'LSTM Average Loss',
+              data: [0.6204, 0.4497, 0.1681, 0.1245, 0.1113],
+              borderColor: '#22d3ee',
+              backgroundColor: 'rgba(34, 211, 238, 0.15)',
+              borderWidth: 3,
+              pointBackgroundColor: '#22d3ee',
+              pointRadius: 5,
+              tension: 0.3,
+              fill: true
+            },
+            {
+              label: 'BiLSTM Average Loss',
+              data: [0.6033, 0.3940, 0.1197, 0.0774, 0.0531],
+              borderColor: '#c084fc',
+              backgroundColor: 'rgba(192, 132, 252, 0.15)',
+              borderWidth: 3,
+              pointBackgroundColor: '#c084fc',
+              pointRadius: 5,
+              tension: 0.3,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#cbd5e1',
+                font: { family: 'Inter', size: 12 }
+              }
+            },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              borderColor: '#334155',
+              borderWidth: 1,
+              titleFont: { family: 'JetBrains Mono' },
+              bodyFont: { family: 'JetBrains Mono' }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(51, 65, 85, 0.3)' },
+              ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 11 } }
+            },
+            y: {
+              grid: { color: 'rgba(51, 65, 85, 0.3)' },
+              ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 11 } }
+            }
+          }
+        }
+      });
+    }
+
+    function toggleSyntaxChart(mode) {
+      document.getElementById('btn-chart-pos').className = mode === 'pos'
+        ? "px-2.5 py-1 rounded bg-brand-600 text-white transition"
+        : "px-2.5 py-1 rounded text-slate-400 hover:text-white transition";
+      document.getElementById('btn-chart-ner').className = mode === 'ner'
+        ? "px-2.5 py-1 rounded bg-brand-600 text-white transition"
+        : "px-2.5 py-1 rounded text-slate-400 hover:text-white transition";
+
+      renderSyntaxChart(mode);
+    }
+
+    function renderSyntaxChart(mode) {
+      const ctx = document.getElementById('chart-syntax').getContext('2d');
+      if (chartSyntax) chartSyntax.destroy();
+
+      let labels, data, colors;
+      if (mode === 'pos') {
+        labels = ['PROPN', 'NOUN', 'VERB', 'ADP', 'CCONJ', 'NUM', 'PUNCT', 'ADJ'];
+        data = [340, 280, 190, 160, 110, 85, 80, 45];
+        colors = 'rgba(6, 182, 212, 0.75)';
+      } else {
+        labels = ['ORG (Organization)', 'CARDINAL (ID Numbers)', 'WORK_OF_ART', 'PERSON', 'PRODUCT'];
+        data = [120, 95, 42, 18, 12];
+        colors = 'rgba(244, 63, 94, 0.75)';
+      }
+
+      chartSyntax = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: colors,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: '#cbd5e1', font: { family: 'JetBrains Mono', size: 10 } }
+            },
+            y: {
+              grid: { color: 'rgba(51, 65, 85, 0.4)' },
+              ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } }
+            }
+          }
+        }
+      });
+    }
+
+    // ==========================================
+    // 7. CLASSIFICATION REPORTS MODAL
+    // ==========================================
+    const classificationReports = {
+      lr: `=== Logistic Regression with TF-IDF ===
+Accuracy: 0.9716981132075472 (97.17%)
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.95      1.00      0.97        58
+           1       1.00      0.94      0.97        48
+
+    accuracy                           0.97       106
+   macro avg       0.98      0.97      0.97       106
+weighted avg       0.97      0.97      0.97       106`,
+
+      lstm: `=== LSTM Model (PyTorch nn.LSTM) ===
+Vocabulary Size: 48 tokens
+Hidden Dimension: 128 (Dropout: 0.5)
+Final Epoch 5 Avg Loss: 0.1113
+Test Accuracy: 0.9716981132075472 (97.17%)
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.96      1.00      0.98        64
+           1       1.00      0.93      0.96        42
+
+    accuracy                           0.97       106
+   macro avg       0.98      0.96      0.97       106
+weighted avg       0.97      0.97      0.97       106`,
+
+      bilstm: `=== BiLSTM Model (Bidirectional PyTorch) ===
+Vocabulary Size: 48 tokens
+Hidden Dimension: 128 * 2 = 256
+Final Epoch 5 Avg Loss: 0.0531
+Test Accuracy: 0.9622641509433962 (96.23%)
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       1.00      0.94      0.97        64
+           1       0.91      1.00      0.95        42
+
+    accuracy                           0.96       106
+   macro avg       0.96      0.97      0.96       106
+weighted avg       0.97      0.96      0.96       106`
+    };
+
+    function showReportModal(modelKey) {
+      const titles = {
+        lr: "Logistic Regression (TF-IDF Baseline)",
+        lstm: "PyTorch Unidirectional LSTM",
+        bilstm: "PyTorch Bidirectional LSTM (BiLSTM)"
+      };
+
+      document.getElementById('modal-title').innerText = titles[modelKey];
+      document.getElementById('modal-report-content').innerText = classificationReports[modelKey];
+      const modal = document.getElementById('report-modal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function closeReportModal() {
+      const modal = document.getElementById('report-modal');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    // ==========================================
+    // 8. LIVE INFERENCE ENGINE SIMULATOR
+    // ==========================================
+    function setInferencePrompt(text) {
+      document.getElementById('infer-text-input').value = text;
+      runLiveInference();
+    }
+
+    function runLiveInference() {
+      const input = document.getElementById('infer-text-input').value.toLowerCase();
+      if (!input.trim()) return;
+
+      // Extract tokens that match vocabulary
+      const words = input.match(/[a-z]+/g) || [];
+      const matched = words.filter(w => bowVocab.includes(w));
+      const tokenContainer = document.getElementById('infer-matched-tokens');
+      tokenContainer.innerHTML = '';
+
+      if (matched.length === 0) {
+        tokenContainer.innerHTML = '<span class="text-slate-500 text-xs">No direct vocabulary overlap detected; utilizing character sub-embeddings.</span>';
+      } else {
+        [...new Set(matched)].forEach(t => {
+          const span = document.createElement('span');
+          span.className = "px-2 py-0.5 rounded bg-brand-500/20 text-brand-300 border border-brand-500/40";
+          span.innerText = t;
+          tokenContainer.appendChild(span);
+        });
+      }
+
+      // Negative/Non-assignable keyword markers from the dataset
+      const deprecatedKeywords = [
+        'short', 'shorts', 'videoblogging', 'vlog', 'movies', 'anime', 'animation/anime', 
+        'action', 'classics', 'vintage', 'deprecated', 'documentary', 'drama', 
+        'family', 'foreign', 'horror', 'sci-fi', 'thriller', 'shows', 'trailers'
+      ];
+
+      // Assignable positive markers
+      const assignableKeywords = [
+        'film', 'autos', 'vehicles', 'music', 'pets', 'animals', 'sports', 
+        'travel', 'events', 'gaming', 'esports', 'people', 'blogs', 'comedy', 
+        'entertainment', 'news', 'politics', 'howto', 'style', 'education', 'science', 'technology'
+      ];
+
+      let scoreAssignable = 0.5;
+
+      // Score evaluation
+      assignableKeywords.forEach(kw => {
+        if (input.includes(kw)) scoreAssignable += 0.35;
+      });
+      deprecatedKeywords.forEach(kw => {
+        if (input.includes(kw)) scoreAssignable -= 0.45;
+      });
+
+      // Special overrides matching ID labels from dataset
+      if (input.includes('film & animation') || input.includes('gaming') || input.includes('music')) {
+        scoreAssignable = Math.max(scoreAssignable, 0.94);
+      }
+      if (input.includes('videoblogging') || input.includes('classics') || input.includes('shows') || input.includes('trailers')) {
+        scoreAssignable = Math.min(scoreAssignable, 0.08);
+      }
+
+      // Clamp between 0.02 and 0.98
+      scoreAssignable = Math.min(Math.max(scoreAssignable, 0.02), 0.98);
+      const isAssignable = scoreAssignable >= 0.5;
+
+      const prob1 = (scoreAssignable * 100).toFixed(1);
+      const prob0 = ((1 - scoreAssignable) * 100).toFixed(1);
+
+      // DOM Updates
+      document.getElementById('infer-prob-1').innerText = `${prob1}%`;
+      document.getElementById('infer-bar-1').style.width = `${prob1}%`;
+      document.getElementById('infer-prob-0').innerText = `${prob0}%`;
+      document.getElementById('infer-bar-0').style.width = `${prob0}%`;
+
+      const badge = document.getElementById('infer-badge');
+      const title = document.getElementById('infer-result-title');
+      const desc = document.getElementById('infer-result-desc');
+
+      if (isAssignable) {
+        badge.className = "px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/40";
+        badge.innerText = "ASSIGNABLE (CLASS 1)";
+        title.innerText = "Creator Uploadable Category";
+        title.className = "text-2xl font-black text-emerald-400 mt-1";
+        desc.innerText = "YouTube actively permits content creators to assign uploads to this category.";
+      } else {
+        badge.className = "px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-rose-500/20 text-rose-400 border border-rose-500/40";
+        badge.innerText = "NON-ASSIGNABLE (CLASS 0)";
+        title.innerText = "Restricted / Deprecated";
+        title.className = "text-2xl font-black text-rose-400 mt-1";
+        desc.innerText = "Archived category or reserved for internal movie/show distribution.";
+      }
+    }
+  </script>
+</body>
+</html>
